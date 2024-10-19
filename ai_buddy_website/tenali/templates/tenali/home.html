@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Buddy</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Welcome to AI Buddy</h1>
+
+    <!-- Form for input -->
+    <form id="chat-form">
+        <input type="text" id="user_input" name="user_input" placeholder="Say something..." required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- Display the AI response -->
+    <p id="response"></p>
+
+    <script>
+        $(document).ready(function(){
+            $('#chat-form').on('submit', function(event){
+                event.preventDefault();
+
+                // Grab the user input
+                var user_input = $('#user_input').val();
+
+                // AJAX request to send the input to the server
+                $.ajax({
+                    url: '',
+                    type: 'POST',
+                    data: {
+                        'user_input': user_input,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(data){
+                        // Update the response paragraph with AI's answer
+                        $('#response').text(data.response);
+                        // Clear the input field
+                        $('#user_input').val('');
+                    },
+                    error: function(){
+                        $('#response').text('There was an error processing your request.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
