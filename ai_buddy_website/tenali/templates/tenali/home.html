@@ -2,67 +2,105 @@
 <html>
 	<head>
 		<title>AI Buddy</title>
-		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	</head>
-	<style>
-		body {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			height: 100vh;
-			background: linear-gradient(to right, #6a11cb, #2575fc);
-			font-family: 'Arial', sans-serif;
-			color: white;
-		}
-		#chat-form {
-			background: rgba(255, 255, 255, 0.9);
-			border-radius: 12px;
-			padding: 30px;
-			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-			width: 90%;
-			max-width: 500px;
-			transition: transform 0.3s;
-		}
+		<style>
+			body {
+				background-color: #121212;
+				color: #ffffff;
+				font-family: Arial, sans-serif;
+				height: 100vh;
+				display: flex;
+				flex-direction: column;
+				justify-content: flex-end;
+				align-items: center;
+				margin: 0;
+			}
 
-		h1 {
-			color: black;
-		}
-		#chat-form:hover {
-			transform: scale(1.02);
-		}
-		#user_input {
-			border-radius: 25px;
-			border: 2px solid #6a11cb;
-			transition: border-color 0.3s;
-			width: 100%;
-			height: 35px;
-			margin-bottom: 20px;
-		}
-		#user_input:focus {
-			border-color: #2575fc;
-			box-shadow: 0 0 5px rgba(37, 117, 252, 0.5);
-		}
-		button {
-			border-radius: 25px;
-			background: #6a11cb;
-			border: none;
-			transition: background 0.3s;
-			padding: 10px;
-			width: 25%;
-		}
-		button:hover {
-			background: #2575fc;
-		}
-		#response {
-			margin-top: 20px;
-			font-weight: bold;
-			text-align: center;
-			color: black;
-		}
-	</style>
+			.button-container {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				margin: 10px;
+			}
+
+			.button-container button,
+			.button-container h2 {
+				padding: 10px 20px;
+				margin: 5px;
+			}
+
+			.button-container button:hover {
+				background-color: #ffeb3b;
+				transform: scale(1.1);
+			}
+
+			#chat-form {
+				position: fixed;
+				bottom: 10px;
+				width: 90%;
+				max-width: 600px;
+				background: rgba(0, 0, 0, 0.8);
+				padding: 20px;
+				border-radius: 10px;
+				box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+				text-align: center;
+			}
+
+			.form-control {
+				width: 96%;
+				padding: 10px;
+				margin-bottom: 10px;
+				border: 1px solid #333;
+				border-radius: 5px;
+				background: #222;
+				color: #fff;
+			}
+
+			.btn {
+				width: 100%;
+				padding: 10px;
+				border: none;
+				border-radius: 5px;
+				background: #ffeb3b;
+				color: #000;
+				font-size: 16px;
+				cursor: pointer;
+			}
+
+			#bubble-container {
+				position: absolute;
+				top: 0;
+				width: 100%;
+				height: 100%;
+				overflow: hidden;
+				pointer-events: none;
+			}
+
+			.bubble {
+				position: absolute;
+				bottom: -50px;
+				width: 20px;
+				height: 20px;
+				background-color: rgba(135, 206, 235, 0.6);
+				border-radius: 50%;
+				animation: bubble 15s linear infinite;
+			}
+
+			@keyframes bubble {
+				0% {
+					transform: translateY(0) scale(1);
+				}
+				50% {
+					transform: translateY(-800px) scale(1.5);
+				}
+				100% {
+					transform: translateY(0) scale(1);
+				}
+			}
+		</style>
+	</head>
 	<body>
+		<div id="bubble-container"></div>
 		<div id="chat-form">
-			<!-- Form for input -->
 			<h1 class="text-center">Welcome to AI Buddy</h1>
 			<form>
 				<div class="form-group">
@@ -76,12 +114,31 @@
 				</div>
 				<button type="submit" class="btn btn-primary btn-lg">Submit</button>
 			</form>
-
-			<!-- Display the AI response for the user-->
 			<p id="response" class="text-center"></p>
 		</div>
-
 		<script>
+			const bubbleContainer = document.getElementById('bubble-container');
+
+			function createBubbles() {
+				for (let i = 0; i < 50; i++) {
+					const bubble = document.createElement('div');
+					bubble.classList.add('bubble');
+					bubble.style.width = bubble.style.height = `${getRandomInt(
+						10,
+						60
+					)}px`;
+					bubble.style.left = `${getRandomInt(0, window.innerWidth)}px`;
+					bubble.style.animationDuration = `${getRandomInt(10, 20)}s`;
+					bubbleContainer.appendChild(bubble);
+				}
+			}
+
+			function getRandomInt(min, max) {
+				return Math.floor(Math.random() * (max - min)) + min;
+			}
+
+			createBubbles();
+
 			$(document).ready(function () {
 				$('#chat-form').on('submit', function (event) {
 					event.preventDefault();
