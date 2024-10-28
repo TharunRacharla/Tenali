@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>AI Buddy</title>
 		<style>
 			body {
@@ -94,6 +96,37 @@
 				}
 				100% {
 					transform: translateY(0) scale(1);
+				}
+			}
+
+			/* Media Queries for Responsiveness */
+			@media (max-width: 768px) {
+				#chat-form {
+					padding: 15px;
+				}
+
+				.form-control {
+					padding: 8px;
+				}
+
+				.btn {
+					font-size: 14px;
+				}
+			}
+
+			@media (max-width: 480px) {
+				.form-control {
+					padding: 6px;
+					font-size: 14px;
+				}
+
+				.btn {
+					font-size: 12px;
+					padding: 8px;
+				}
+
+				h1 {
+					font-size: 24px;
 				}
 			}
 		</style>
