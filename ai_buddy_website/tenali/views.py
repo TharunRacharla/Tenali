@@ -1,36 +1,40 @@
-from django.shortcuts import render
+from .ai_buddy import speak, takeCommand, process_input
 from django.http import JsonResponse
-from .ai_buddy import tenali_raman_conversation
-from .reminder_handler import handle_reminder_flow, get_reminders, delete_reminder
+from django.shortcuts import render
+from django.views.decorators.http import require_http_methods
+import datetime
 
+# Greeting function endpoint
+@require_http_methods(["GET"])
+def wish_me(request):
+    hour = int(datetime.datetime.now().hour)
+    if hour < 12:
+        greeting = "Good Morning!"
+    elif hour < 18:
+        greeting = "Good Afternoon!"
+    else:
+        greeting = "Good Evening!"
+    greeting += " I am AI Buddy. How may I help you?"
+
+    return JsonResponse({"greeting": greeting})
+
+# Main home view
+@require_http_methods(["GET", "POST"])
 def home(request):
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == "POST":
-        user_input = request.POST.get("user_input").lower()
+    # Check if the bot should stop listening
+    if request.session.get("stop_listening", False):
+        return JsonResponse({"user_input": "exit", "response": "AI Buddy has stopped listening.", "stop": True})
 
-        # Reminder handling
-        reminder_response = handle_reminder_flow(user_input, request.session)
-        if reminder_response:
-            return JsonResponse({"response": reminder_response})
+    if request.method == "POST":
+        user_input = takeCommand().lower()
+        
+        if "exit" in user_input:
+            response = "Goodbye!"
+            request.session["stop_listening"] = True  # Set flag to stop further listening
+            return JsonResponse({"user_input": user_input, "response": response, "stop": True})
 
-        elif "view reminders" in user_input:
-            reminders = get_reminders()
-            if reminders:
-                reminders_list = ", ".join([f"{reminder.reminder_text} at {reminder.reminder_time.strftime('%Y-%m-%d %H:%M')}" for reminder in reminders])
-                return JsonResponse({"response": f"Here are your reminders: {reminders_list}"})
-            else:
-                return JsonResponse({"response": "You have no reminders set."})
-
-        elif "delete reminder" in user_input:
-            reminder_id = user_input.split()[-1]  # Extract ID from input
-            response = delete_reminder(reminder_id)
-            return JsonResponse({"response": response})
-
-        elif "set reminder" in user_input:
-            request.session['waiting_for_reminder_text'] = True
-            return JsonResponse({"response": "Ah! You need to be reminded. What task would you like me to remember for you?"})
-
-        else:
-            response = tenali_raman_conversation(user_input)
-            return JsonResponse({"response": response})
+        # Process other inputs normally
+        response = process_input(user_input)
+        return JsonResponse({"user_input": user_input, "response": response, "stop": False})
 
     return render(request, "tenali/home.html")

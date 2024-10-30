@@ -1,109 +1,80 @@
-# import random
-# import pyttsx3
-# from ai_buddy_website.tenali.reminders import setup_database, add_reminder, get_reminders, delete_reminder
+import pyttsx3
+import speech_recognition as sr
+import datetime
+import webbrowser
+import os
+import smtplib
 
-# #initialize text to speech engine
-# engine = pyttsx3.init()
+def speak(audio):
+    engine = pyttsx3.init('sapi5')  # Initialize a new engine instance each time
+    voices = engine.getProperty('voices')
+    engine.setProperty('voice', voices[0].id)
+    engine.say(audio)
+    engine.runAndWait()
+    engine.stop()  # Stop the engine to close the loop
+    print(audio)
 
-# # Basic command-response dictionary
+def takeCommand():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        r.pause_threshold = 1
+        audio = r.listen(source, timeout=5, phrase_time_limit=5)
 
-# responses = {
-#     "hello": ["Hello, how can I assist you today?", "Greetings! What do you need help with?"],
-#     "how are you": ["I'm doing great, thanks! How about you?", "I'm a bit of code, but feeling witty!"],
-#     "what's your name": ["I'm your clever AI buddy, modeled after Tenali Raman!", "Call me Tenali, your AI assistant!"],
-#     "bye": ["Goodbye! Have a great day ahead!", "See you soon!"],
-#     "set reminder": ["Sure, what would you like me to remind you about?"],
-#     "time": ["The current time is..."],
-#     "solve this problem": ["Let me think like Tenali... Here's a clever solution!"]
-# }
+    try:
+        print("Recognizing...")
+        query = r.recognize_google(audio, language='en-in')
+        print(f"User said: {query}\n")
 
-# #function to get a response
-# def get_response(user_input):
-#     #convert user input to lower_case
-#     user_input = user_input.lower()
+    except Exception as e:
+        return "Say that again please..."
+    return query
 
-#     if "set_remainder" in user_input:
-#         return "What would you like me to remind you about?"
-    
-#     elif "view reminders" in user_input:
-#         reminders = get_reminders
-#         if reminders:
-#             response = "Here are your reminders:\n"
-#             for rem in reminders:
-#                 response += f"{rem[0]}: {rem[1]} at {rem[2]}\n"
-#             return response
-#         else:
-#             return "You have no reminders."
-    
-#     elif "delete remainder" in user_input:
-#         return "Which reminder ID would you like to delete?"
-    
-#     elif user_input in responses:
-#         return random.choice(responses[user_input])
-    
-#     return "Sorry, I didn't understand that. Can you try again?"
-    
-
-# #function to speak the response
-# def speak_response(response):
-#     engine.say(response)
-#     engine.runAndWait()
-
-# #Main loop
-# def main():
-#     print("Hello! I am Tenali. Type 'bye' to exit.")
-
-#     while True:
-#         user_input = input("You: ")
-
-#         if "set reminder" in user_input.lower():
-#             print("AI Buddy: What should I remind you about?")
-#             reminder_text = input("You: ")
-#             print("AI Buddy: When should I remind you? (Format: YYYY-MM-DD HH:MM)")
-#             reminder_time = input("You: ")
-
-#             # Add the reminder to the database
-#             add_reminder(reminder_text, reminder_time)
-#             print("AI Buddy: Reminder set!")
-
-#         elif "view reminders" in user_input.lower():
-#             response = get_response(user_input)
-#             print(f"AI Buddy: {response}")
-        
-#         elif "delete reminder" in user_input.lower():
-#             print("AI Buddy: Which reminder ID would you like to delete?")
-#             reminder_id = input("You: ")
-#             delete_reminder(reminder_id)
-#             print(f"AI Buddy: Reminder {reminder_id} deleted!")
-
-#         elif user_input.lower() == "bye":
-#             response = get_response(user_input)
-#             print(f"AI Buddy: {response}")
-#             speak_response(response)
-#             break
-
-#         else:
-#             response = get_response(user_input)
-#             print(f"AI Buddy: {response}")
-#             speak_response(response)
+#to make wish
+import datetime
 
 
-# if __name__ == "__main__":
-#     main()
-
-
-
-# buddy/ai_buddy.py
-
-def tenali_raman_conversation(user_input):
-    # Tenali Raman-style wit and conversational responses
-    if "hello" in user_input:
-        return "Hello, my friend! What wisdom can I impart today?"
-    elif "how are you" in user_input:
-        return "As wise as ever! But how may I serve your brilliant mind?"
-    elif "who are you" in user_input:
-        return "I am your trusty friend, Tenali! Ready to assist you with wit and wisdom!"
-    elif "joke" in user_input:
-        return "Why did the mathematician bring a ladder to the bar? To work on some higher-level thinking!"
+def process_input(user_input):
+    if "open google" in user_input:
+        webbrowser.open("https://www.google.com")
+        return "Opening Google..."
+    elif "open youtube" in user_input:
+        webbrowser.open("https://www.youtube.com")
+        return "Opening YouTube..."
+    elif "open facebook" in user_input:
+        webbrowser.open("https://www.facebook.com")
+        return "Opening Facebook..."
+    elif "open instagram" in user_input:
+        webbrowser.open("https://www.instagram.com")
+        return "Opening Instagram..."
+    elif "open whatsapp" in user_input:
+        webbrowser.open("https://web.whatsapp.com")
+        return "Opening WhatsApp..."
+    elif "open notepad" in user_input:
+        npath = "C:\\Windows\\system32\\notepad.exe"
+        os.system(npath)
+        return "Opening Notepad..."
     else:
-        return "Hmm, that’s an interesting question. Let me think... or perhaps you'd prefer a reminder or a clever solution?"
+        return f"Sorry, I didn't get that. Please try again. did you say {user_input}"
+
+
+
+# def wishMeDecorator(func):
+#     def wrapper(*args, **kwargs):
+#         # Get the current hour
+#         hour = int(datetime.datetime.now().hour)
+
+#         # Determine greeting based on the time of day
+#         if 0 <= hour < 12:
+#             speak("Good Morning!")
+#         elif 12 <= hour < 18:
+#             speak("Good Afternoon!")
+#         else:
+#             speak("Good Evening!")
+        
+#         # Personalized message
+#         speak("I am AI Buddy. How may I help you?")
+        
+#         # Call the original function
+#         return func(*args, **kwargs)
+#     return wrapper
