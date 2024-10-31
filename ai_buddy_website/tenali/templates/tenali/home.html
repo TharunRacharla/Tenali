@@ -120,16 +120,15 @@
 		<script>
 			$(document).ready(function () {
 				let greeted = false;
-				let stopConversation = false; // Flag to stop conversation on "exit" response
+				let stopConversation = false;
 
 				function startConversation() {
-					if (stopConversation) return; // Stop further requests if conversation has ended
+					if (stopConversation) return;
 
-					// Run wishMe only once on initial load
 					if (!greeted) {
 						greeted = true;
 						$.ajax({
-							url: '/wish-me', // Adjust to the endpoint used for wishMe if necessary
+							url: '/wish-me/', // Ensure this URL is correct
 							type: 'GET',
 							success: function (data) {
 								$('#conversation').append(
@@ -139,18 +138,15 @@
 						});
 					}
 
-					// Show "Listening" animation
 					$('#listening-animation').show();
 					$('#recognizing-animation').hide();
 
-					// Simulate listening state, then switch to recognizing state
 					setTimeout(function () {
 						$('#listening-animation').hide();
 						$('#recognizing-animation').show();
 
-						// AJAX request to handle the recognition and response
 						$.ajax({
-							url: '', // Replace with correct URL if needed
+							url: '/recognize/', // Replace with your endpoint
 							type: 'POST',
 							data: {
 								csrfmiddlewaretoken: '{{ csrf_token }}',
@@ -158,32 +154,38 @@
 							success: function (data) {
 								$('#recognizing-animation').hide();
 
-								// Stop if "exit" command is received
+								// Check if the conversation should stop
 								if (data.user_input === 'exit') {
 									$('#conversation').append(
 										`<p><strong>AI Buddy:</strong> ${data.response}</p>`
 									);
-									stopConversation = true; // Set flag to stop further processing
+									stopConversation = true; // Stop further processing
 									return;
 								}
 
-								// Display conversation if not exiting
+								// Restart conversation if "wake up buddy"
+								if (data.user_input.toLowerCase() === 'wake up buddy') {
+									stopConversation = false; // Reset flag
+									$('#conversation').append(
+										`<p><strong>AI Buddy:</strong> Hello again! What can I do for you?</p>`
+									);
+									startConversation(); // Restart the conversation
+									return;
+								}
+
 								const newResponse = `<p><strong>User:</strong> ${data.user_input}</p><p><strong>AI Buddy:</strong> ${data.response}</p>`;
 								$('#conversation').append(newResponse);
-
-								// Restart the conversation if not stopping
 								startConversation();
 							},
-							error: function () {
+							error: function (xhr, status, error) {
 								$('#recognizing-animation').hide();
-								const errorMessage = `<p><strong>Error:</strong> There was an error processing your request.</p>`;
+								const errorMessage = `<p><strong>Error:</strong> ${error}</p>`;
 								$('#conversation').append(errorMessage);
 							},
 						});
 					}, 2000); // Time delay to simulate recognizing state
 				}
 
-				// Start the conversation on page load
 				startConversation();
 			});
 
