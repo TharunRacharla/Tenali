@@ -19,7 +19,7 @@ def takeCommand():
     with sr.Microphone() as source:
         print("Listening...")
         r.pause_threshold = 1
-        audio = r.listen(source, timeout=5, phrase_time_limit=5)
+        audio = r.listen(source, timeout=10, phrase_time_limit=5)
 
     try:
         print("Recognizing...")
@@ -37,22 +37,28 @@ import datetime
 def process_input(user_input):
     if "open google" in user_input:
         webbrowser.open("https://www.google.com")
+        speak("Opening Google...")
         return "Opening Google..."
     elif "open youtube" in user_input:
         webbrowser.open("https://www.youtube.com")
+        speak("Opening YouTube...")
         return "Opening YouTube..."
     elif "open facebook" in user_input:
         webbrowser.open("https://www.facebook.com")
+        speak("Opening Facebook...")
         return "Opening Facebook..."
     elif "open instagram" in user_input:
         webbrowser.open("https://www.instagram.com")
+        speak("Opening Instagram...")
         return "Opening Instagram..."
     elif "open whatsapp" in user_input:
         webbrowser.open("https://web.whatsapp.com")
+        speak("Opening WhatsApp.... Scan the Code to Open your Whatsapp....")
         return "Opening WhatsApp..."
     elif "open notepad" in user_input:
         npath = "C:\\Windows\\system32\\notepad.exe"
         os.system(npath)
+        speak("Opening Notepad...")
         return "Opening Notepad..."
     else:
         return f"Sorry, I didn't get that. Please try again. did you say {user_input}"

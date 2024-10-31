@@ -175,6 +175,8 @@
 
 								const newResponse = `<p><strong>User:</strong> ${data.user_input}</p><p><strong>AI Buddy:</strong> ${data.response}</p>`;
 								$('#conversation').append(newResponse);
+								scrollToBottom();
+
 								startConversation();
 							},
 							error: function (xhr, status, error) {
@@ -208,6 +210,15 @@
 				return Math.floor(Math.random() * (max - min)) + min;
 			}
 			createBubbles();
+
+			// AutoScroll function
+			function scrollToBottom() {
+				const conversationDiv = document.getElementById('conversation');
+				conversationDiv.scrollTop = conversationDiv.scrollHeight;
+			}
+
+			// Scroll to the bottom after adding the new message
+			scrollToBottom();
 		</script>
 	</body>
 </html>
