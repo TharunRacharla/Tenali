@@ -1,14 +1,15 @@
 import pyttsx3
 import speech_recognition as sr
 import datetime
-import webbrowser
-import os
+import webbrowser, wikipedia
+import os, random, pywhatkit as kit
 import smtplib
+import cv2
 
 def speak(audio):
     engine = pyttsx3.init('sapi5')  # Initialize a new engine instance each time
     voices = engine.getProperty('voices')
-    engine.setProperty('voice', voices[0].id)
+    engine.setProperty('voice', voices[0].id) 
     engine.say(audio)
     engine.runAndWait()
     engine.stop()  # Stop the engine to close the loop
@@ -30,36 +31,76 @@ def takeCommand():
         return "Say that again please..."
     return query
 
-#to make wish
-import datetime
-
-
 def process_input(user_input):
     if "open google" in user_input:
-        webbrowser.open("https://www.google.com")
-        speak("Opening Google...")
-        return "Opening Google..."
+        speak("Sir, what should I search on Google?")
+        search = takeCommand().lower()
+        webbrowser.open(f"{search}")
+        speak("Opening Google for you...")
+
     elif "open youtube" in user_input:
         webbrowser.open("https://www.youtube.com")
         speak("Opening YouTube...")
         return "Opening YouTube..."
-    elif "open facebook" in user_input:
-        webbrowser.open("https://www.facebook.com")
-        speak("Opening Facebook...")
-        return "Opening Facebook..."
-    elif "open instagram" in user_input:
-        webbrowser.open("https://www.instagram.com")
-        speak("Opening Instagram...")
-        return "Opening Instagram..."
+
     elif "open whatsapp" in user_input:
         webbrowser.open("https://web.whatsapp.com")
         speak("Opening WhatsApp.... Scan the Code to Open your Whatsapp....")
         return "Opening WhatsApp..."
+    
     elif "open notepad" in user_input:
         npath = "C:\\Windows\\system32\\notepad.exe"
         os.system(npath)
         speak("Opening Notepad...")
         return "Opening Notepad..."
+    
+    elif "open command prompt" in user_input:
+        os.system("start cmd")
+        speak("Opening Command Prompt...")
+        return "Opening Command Prompt..."
+
+    elif "open camera" in user_input:
+        cap = cv2.VideoCapture(0)
+        while True:
+            ret, img = cap.read()
+            cv2.imshow('webcam', img)
+            k = cv2.waitKey(58)
+            if k == ord('q'):
+                break
+        cap.release()
+        cv2.destroyAllWindows()
+
+    elif "play music" in user_input:
+        music_dir = "C:\\Users\\HP\\Music\\Anime Bangers🍜_SpotifyDown_com"
+        songs = os.listdir(music_dir)
+        for song in songs:
+            if song.endswith(".mp3"):
+                os.startfile(os.path.join(music_dir, song))
+                speak("Playing Music...")
+        return "Playing Music..."
+
+    elif "the time" in user_input:
+        speak(f"Current time is {datetime.datetime.now().strftime('%H:%M:%S')}")
+        return f"Current time is {datetime.datetime.now().strftime('%H:%M:%S')}"
+
+    elif "the date" in user_input:
+        speak(f"Current date is {datetime.datetime.now().strftime('%d/%m/%Y')}")
+        return f"Current date is {datetime.datetime.now().strftime('%d/%m/%Y')}"
+
+    elif "wikipedia" in user_input:
+        speak("Searching Wikipedia...")
+        user_input = user_input.replace("wikipedia", "")
+        results = wikipedia.summary(user_input, sentences=2)
+        speak("According to Wikipedia")
+        speak(results)
+        return results
+    
+    elif "send message" in user_input:
+        speak("What should I say?")
+        message = takeCommand().lower()
+        kit.sendwhatmsg("+91---", message, datetime.datetime.now().hour, datetime.datetime.now().minute + 2)
+        speak("Message sent!")
+        return "Message sent!"
     else:
         return f"Sorry, I didn't get that. Please try again. did you say {user_input}"
 
