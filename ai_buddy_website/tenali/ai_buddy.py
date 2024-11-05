@@ -2,9 +2,18 @@ import pyttsx3
 import speech_recognition as sr
 import datetime
 import webbrowser, wikipedia
-import os, random, pywhatkit as kit
+import os, sys,  random, pywhatkit as kit
 import smtplib
 import cv2
+
+# to send email
+def sendEmail(to, content):
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.ehlo()
+    server.starttls()
+    server.login('tharunracharla06442@gmail', 'your_password')
+    server.sendmail('your_email', to, content)
+    server.close()
 
 def speak(audio):
     engine = pyttsx3.init('sapi5')  # Initialize a new engine instance each time
@@ -42,6 +51,21 @@ def process_input(user_input):
         webbrowser.open("https://www.youtube.com")
         speak("Opening YouTube...")
         return "Opening YouTube..."
+
+    elif "play songs on youtube" in user_input:
+        kit.playonyt("See you again")
+        speak("playing songs on youtube")
+
+    elif "send email to tharun" in user_input:
+        try:            
+            speak("What should I say?")
+            content = takeCommand().lower()
+            to = "tharunracharla06442@gmail.com"
+            sendEmail(to, content)
+            speak("Email has been sent to Tharun!")
+        except Exception as e:
+            print(e)
+            speak("Sorry. I am not able to send this email to tharun...")
 
     elif "open whatsapp" in user_input:
         webbrowser.open("https://web.whatsapp.com")
@@ -101,8 +125,17 @@ def process_input(user_input):
         kit.sendwhatmsg("+91---", message, datetime.datetime.now().hour, datetime.datetime.now().minute + 2)
         speak("Message sent!")
         return "Message sent!"
+    
+    elif "no thanks" in user_input:
+        speak("Thanks for using me. Have a nice day!")
+        sys.exit()
+
     else:
         return f"Sorry, I didn't get that. Please try again. did you say {user_input}"
+
+        
+    speak("Sir, do you have any other work?")
+
 
 
 
