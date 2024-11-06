@@ -3,7 +3,7 @@ import speech_recognition as sr
 import datetime
 import webbrowser, wikipedia
 import os, sys,  random, pywhatkit as kit
-import smtplib
+import smtplib, pyjokes
 import cv2
 
 # to send email
@@ -78,10 +78,20 @@ def process_input(user_input):
         speak("Opening Notepad...")
         return "Opening Notepad..."
     
+    elif "close notepad" in user_input:
+        os.system("taskkill /f /im notepad.exe")
+        speak("Closing Notepad...")
+        return "Closing Notepad..."
+    
     elif "open command prompt" in user_input:
         os.system("start cmd")
         speak("Opening Command Prompt...")
         return "Opening Command Prompt..."
+
+    elif "close command prompt" in user_input:
+        os.system("taskkill /f /im cmd.exe")
+        speak("Closing Command Prompt...")
+        return "Closing Command Prompt..."
 
     elif "open camera" in user_input:
         cap = cv2.VideoCapture(0)
@@ -111,6 +121,35 @@ def process_input(user_input):
         speak(f"Current date is {datetime.datetime.now().strftime('%d/%m/%Y')}")
         return f"Current date is {datetime.datetime.now().strftime('%d/%m/%Y')}"
 
+    elif "tell me a joke" in user_input:
+        speak(pyjokes.get_joke())
+        return pyjokes.get_joke()
+
+    elif "shut down the system" in user_input:
+        speak("Shutting down the system...")
+        os.system("shutdown /s /t 5")
+        return "Shutting down the system..."
+    
+    elif "restart the system" in user_input:
+        speak("Restarting the system...")
+        os.system("shutdown /r /t 5")
+        return "Restarting the system..."
+
+    elif "sleep the system" in user_input:
+        speak("Sleeping the system...")
+        os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
+        return "Sleeping the system..."
+
+
+    #to set alarm
+    elif "set alarm" in user_input:
+        nn = int(datetime.datetime.now().hour)
+        if nn == 22:
+            music_dir = "C:\\Users\\HP\\Music\\Anime Bangers🍜_SpotifyDown_com"
+            songs = os.listdir(music_dir)
+            if song.endswith(".mp3"):
+                os.startfile(os.path.join(music_dir, songs[0]))
+
     elif "wikipedia" in user_input:
         speak("Searching Wikipedia...")
         user_input = user_input.replace("wikipedia", "")
@@ -133,7 +172,6 @@ def process_input(user_input):
     else:
         return f"Sorry, I didn't get that. Please try again. did you say {user_input}"
 
-        
     speak("Sir, do you have any other work?")
 
 
