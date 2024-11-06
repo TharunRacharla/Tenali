@@ -2,7 +2,7 @@ import pyttsx3
 import speech_recognition as sr
 import datetime
 import webbrowser, wikipedia
-import os, sys,  random, pywhatkit as kit
+import os, sys, random, pywhatkit as kit
 import smtplib, pyjokes
 import cv2
 
@@ -53,8 +53,10 @@ def process_input(user_input):
         return "Opening YouTube..."
 
     elif "play songs on youtube" in user_input:
-        kit.playonyt("See you again")
-        speak("playing songs on youtube")
+        speak("Sir, which song do you want to listen?")
+        search = takeCommand().lower()
+        kit.playonyt(search)
+        speak(f"playing {search} on youtube")
 
     elif "send email to tharun" in user_input:
         try:            
@@ -74,14 +76,13 @@ def process_input(user_input):
     
     elif "open notepad" in user_input:
         npath = "C:\\Windows\\system32\\notepad.exe"
-        os.system(npath)
         speak("Opening Notepad...")
+        os.system(npath)
         return "Opening Notepad..."
     
     elif "close notepad" in user_input:
         os.system("taskkill /f /im notepad.exe")
         speak("Closing Notepad...")
-        return "Closing Notepad..."
     
     elif "open command prompt" in user_input:
         os.system("start cmd")
@@ -107,10 +108,9 @@ def process_input(user_input):
     elif "play music" in user_input:
         music_dir = "C:\\Users\\HP\\Music\\Anime Bangers🍜_SpotifyDown_com"
         songs = os.listdir(music_dir)
-        for song in songs:
-            if song.endswith(".mp3"):
-                os.startfile(os.path.join(music_dir, song))
-                speak("Playing Music...")
+        if songs.endswith(".mp3"):
+            os.startfile(os.path.join(music_dir, random.choice(songs)))
+            speak("Playing Music...")
         return "Playing Music..."
 
     elif "the time" in user_input:
@@ -147,7 +147,7 @@ def process_input(user_input):
         if nn == 22:
             music_dir = "C:\\Users\\HP\\Music\\Anime Bangers🍜_SpotifyDown_com"
             songs = os.listdir(music_dir)
-            if song.endswith(".mp3"):
+            if songs.endswith(".mp3"):
                 os.startfile(os.path.join(music_dir, songs[0]))
 
     elif "wikipedia" in user_input:
