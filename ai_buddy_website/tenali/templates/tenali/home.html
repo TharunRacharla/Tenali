@@ -124,9 +124,11 @@
 
 				function startConversation() {
 					if (stopConversation) return;
-
+					
+					// Greet once
 					if (!greeted) {
 						greeted = true;
+						
 						$.ajax({
 							url: '/wish-me/', // Ensure this URL is correct
 							type: 'GET',
@@ -141,6 +143,7 @@
 					$('#listening-animation').show();
 					$('#recognizing-animation').hide();
 
+					// Simulate listening, waits 2 seconds before recognizing
 					setTimeout(function () {
 						$('#listening-animation').hide();
 						$('#recognizing-animation').show();

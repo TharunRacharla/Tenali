@@ -3,11 +3,13 @@ import speech_recognition as sr
 import datetime
 import webbrowser, wikipedia
 import os, sys, random, pywhatkit as kit
-import smtplib, pyjokes
+import smtplib, pyjokes, requests
+from bs4 import BeautifulSoup as bs
 import cv2
 
 # to send email
 def sendEmail(to, content):
+    """Sends an email to the specified recipient with the given content."""
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.ehlo()
     server.starttls()
@@ -18,7 +20,8 @@ def sendEmail(to, content):
 def speak(audio):
     engine = pyttsx3.init('sapi5')  # Initialize a new engine instance each time
     voices = engine.getProperty('voices')
-    engine.setProperty('voice', voices[0].id) 
+    engine.setProperty('voice', voices[0].id)
+    engine.setProperty('rate', 180) 
     engine.say(audio)
     engine.runAndWait()
     engine.stop()  # Stop the engine to close the loop
@@ -29,23 +32,34 @@ def takeCommand():
     with sr.Microphone() as source:
         print("Listening...")
         r.pause_threshold = 1
-        audio = r.listen(source, timeout=10, phrase_time_limit=5)
+        audio = r.listen(source, timeout=10, phrase_time_limit=10)
 
     try:
         print("Recognizing...")
-        query = r.recognize_google(audio, language='en-in')
-        print(f"User said: {query}\n")
+        user_input = r.recognize_google(audio, language='en-in')
+        print(f"User said: {user_input}\n")
 
     except Exception as e:
         return "Say that again please..."
-    return query
+    return user_input
 
 def process_input(user_input):
     if "open google" in user_input:
-        speak("Sir, what should I search on Google?")
-        search = takeCommand().lower()
-        webbrowser.open(f"{search}")
-        speak("Opening Google for you...")
+        speak("Sir, what should I search on google?")
+        user_input = takeCommand().lower()
+        import wikipedia as googleScrap
+        user_input = user_input.replace("Tenali","")
+        user_input = user_input.replace("google search","")
+        user_input = user_input.replace("google","")
+        speak("This is what I found on google")
+
+        try:
+            kit.search(user_input)
+            result = googleScrap.summary(user_input, sentences=2)
+            speak(result)
+
+        except:
+            speak("No speakable output available")
 
     elif "open youtube" in user_input:
         webbrowser.open("https://www.youtube.com")
@@ -134,13 +148,10 @@ def process_input(user_input):
         speak("Restarting the system...")
         os.system("shutdown /r /t 5")
         return "Restarting the system..."
-
     elif "sleep the system" in user_input:
         speak("Sleeping the system...")
         os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
         return "Sleeping the system..."
-
-
     #to set alarm
     elif "set alarm" in user_input:
         nn = int(datetime.datetime.now().hour)
@@ -149,28 +160,45 @@ def process_input(user_input):
             songs = os.listdir(music_dir)
             if songs.endswith(".mp3"):
                 os.startfile(os.path.join(music_dir, songs[0]))
-
     elif "wikipedia" in user_input:
         speak("Searching Wikipedia...")
         user_input = user_input.replace("wikipedia", "")
-        results = wikipedia.summary(user_input, sentences=2)
+        results = wikipedia.summary(user_input, sentences=5)
+        print(results)
         speak("According to Wikipedia")
-        speak(results)
-        return results
+        speak(results)        
+
+        return "thank you"
+
+    elif "temperature" in user_input:
+        search = "temperature in delhi"
+        url = f"https://www.google.com/search?q={search}"
+        r  = requests.get(url)
+        data = bs(r.text,"html.parser")
+        temp = data.find("div", class_ = "BNeawe").text
+        speak(f"current{search} is {temp}")
     
+    elif "weather" in user_input:
+        
+        search = "temperature in delhi"
+        url = f"https://www.google.com/search?q={search}"
+        r  = requests.get(url)
+        data = bs(r.text,"html.parser")
+        temp = data.find("div", class_ = "BNeawe").text
+        speak(f"current{search} is {temp}")
+
     elif "send message" in user_input:
         speak("What should I say?")
         message = takeCommand().lower()
         kit.sendwhatmsg("+91---", message, datetime.datetime.now().hour, datetime.datetime.now().minute + 2)
         speak("Message sent!")
         return "Message sent!"
-    
     elif "no thanks" in user_input:
         speak("Thanks for using me. Have a nice day!")
-        sys.exit()
-
+        return 'exit'
     else:
         return f"Sorry, I didn't get that. Please try again. did you say {user_input}"
+    
 
     speak("Sir, do you have any other work?")
 

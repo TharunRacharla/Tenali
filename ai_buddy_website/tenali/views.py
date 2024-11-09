@@ -31,15 +31,6 @@ def home(request):
    
     if request.method == "POST":
         user_input = takeCommand().lower()
-
-        # if request.session.get("stop_listening", False):
-        #     return JsonResponse({"user_input": "exit", "response": "AI Buddy has stopped listening.", "stop": True})
-        
-        # if "exit" in user_input:
-        #     response = "Goodbye!"
-        #     request.session["stop_listening"] = True  # Set flag to stop further listening
-        #     return JsonResponse({"user_input": user_input, "response": response, "stop": True})
-
         # Process other inputs normally
         response = process_input(user_input)
         return JsonResponse({"user_input": user_input, "response": response, "stop": False})
