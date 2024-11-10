@@ -1,11 +1,9 @@
-import pyttsx3
-import speech_recognition as sr
-import datetime
-import webbrowser, wikipedia
+import pyttsx3, speech_recognition as sr, datetime, webbrowser, wikipedia
 import os, sys, random, pywhatkit as kit
-import smtplib, pyjokes, requests
+import smtplib, pyjokes, requests, time
 from bs4 import BeautifulSoup as bs
-import cv2
+import cv2, spacy
+from .weather_bot import get_weather_info
 
 # to send email
 def sendEmail(to, content):
@@ -40,6 +38,7 @@ def takeCommand():
         print(f"User said: {user_input}\n")
 
     except Exception as e:
+        speak("Sorry, I couldn't understand what you said. Please try again.")
         return "Say that again please..."
     return user_input
 
@@ -179,13 +178,8 @@ def process_input(user_input):
         speak(f"current{search} is {temp}")
     
     elif "weather" in user_input:
-        
-        search = "temperature in delhi"
-        url = f"https://www.google.com/search?q={search}"
-        r  = requests.get(url)
-        data = bs(r.text,"html.parser")
-        temp = data.find("div", class_ = "BNeawe").text
-        speak(f"current{search} is {temp}")
+        weather_info = get_weather_info(user_input)
+        speak(weather_info)
 
     elif "send message" in user_input:
         speak("What should I say?")
@@ -195,12 +189,13 @@ def process_input(user_input):
         return "Message sent!"
     elif "no thanks" in user_input:
         speak("Thanks for using me. Have a nice day!")
-        return 'exit'
-    else:
-        return f"Sorry, I didn't get that. Please try again. did you say {user_input}"
-    
+        return 'exit'   
+    elif "wake up" in user_input:
+        return "wake up buddy"
 
+    time.sleep(2)
     speak("Sir, do you have any other work?")
+    return "wake up buddy"
 
 
 

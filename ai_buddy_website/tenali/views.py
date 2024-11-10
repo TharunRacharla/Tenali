@@ -23,11 +23,6 @@ def wish_me(request):
 # Main home view
 @require_http_methods(["GET", "POST"])
 def home(request):
-    # Check if the bot should stop listening
-    # if user_input.lower() == "wake up buddy":
-    #     response = "AI Buddy is awake! How can I assist you?"
-    #     stop = False
-
    
     if request.method == "POST":
         user_input = takeCommand().lower()
