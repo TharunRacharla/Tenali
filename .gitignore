@@ -23,5 +23,4 @@ db.sqlite3
 .env
 
 further_scope/
-
-*.PyWhatKit_DB
+PyWhatKit_DB.txt
