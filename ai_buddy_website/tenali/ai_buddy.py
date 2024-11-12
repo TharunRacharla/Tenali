@@ -56,6 +56,7 @@ def takeCommand():
     return user_input
 
 def process_input(user_input):
+    #run_google.py
     if "open google" in user_input:
         speak("Sir, what should I search on google?")
         user_input = takeCommand().lower()
@@ -73,17 +74,20 @@ def process_input(user_input):
         except:
             speak("No speakable output available")
 
+    #run_youtube.py
     elif "open youtube" in user_input:
         webbrowser.open("https://www.youtube.com")
         speak("Opening YouTube...")
         return "Opening YouTube..."
 
+    #run_youtube.py
     elif "play songs on youtube" in user_input:
         speak("Sir, which song do you want to listen?")
         search = takeCommand().lower()
         kit.playonyt(search)
         speak(f"playing {search} on youtube")
 
+    #run_email.py
     elif "send email to tharun" in user_input:
         try:            
             speak("What should I say?")
@@ -95,31 +99,37 @@ def process_input(user_input):
             print(e)
             speak("Sorry. I am not able to send this email to tharun...")
 
+    #run_whatsapp.py
     elif "open whatsapp" in user_input:
         webbrowser.open("https://web.whatsapp.com")
         speak("Opening WhatsApp.... Scan the Code to Open your Whatsapp....")
         return "Opening WhatsApp..."
     
+    #run_notepad.py
     elif "open notepad" in user_input:
         npath = "C:\\Windows\\system32\\notepad.exe"
         speak("Opening Notepad...")
         subprocess.Popen(npath)
         return "Opening Notepad..."
     
+    #run_notepad.py
     elif "close notepad" in user_input:
         os.system("taskkill /f /im notepad.exe")
         speak("Closing Notepad...")
     
+    #run_cmd.py
     elif "open command prompt" in user_input:
         speak("Opening Command Prompt...")
         subprocess.Popen("cmd.exe", shell=True)  # Opens Command Prompt without blocking
         return "Opening Command Prompt..."
 
+    #run_cmd.py
     elif "close command prompt" in user_input:
         os.system("taskkill /f /im cmd.exe")
         speak("Closing Command Prompt...")
         return "Closing Command Prompt..."
 
+    #run_camera.py
     elif "open camera" in user_input:
         cap = cv2.VideoCapture(0)
         while True:
@@ -164,6 +174,7 @@ def process_input(user_input):
         speak("Sleeping the system...")
         os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
         return "Sleeping the system..."
+    
     #to set alarm
     elif "set alarm" in user_input:
         nn = int(datetime.datetime.now().hour)
@@ -190,6 +201,7 @@ def process_input(user_input):
         temp = data.find("div", class_ = "BNeawe").text
         speak(f"current{search} is {temp}")
     
+    #weather_bot.py
     elif "weather" in user_input:
         weather_info = get_weather_info(user_input)
         speak(weather_info)
