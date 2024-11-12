@@ -2,7 +2,7 @@ import pyttsx3, speech_recognition as sr, datetime, webbrowser, wikipedia
 import os, sys, random, pywhatkit as kit
 import smtplib, pyjokes, requests, time
 from bs4 import BeautifulSoup as bs
-import cv2, spacy
+import cv2, spacy, subprocess
 from .weather_bot import get_weather_info
 
 # to send email
@@ -30,16 +30,29 @@ def takeCommand():
     with sr.Microphone() as source:
         print("Listening...")
         r.pause_threshold = 1
-        audio = r.listen(source, timeout=10, phrase_time_limit=10)
+        try:
+            # Attempt to listen with specified timeout and phrase time limit
+            audio = r.listen(source, timeout=5, phrase_time_limit=15)
+        except sr.WaitTimeoutError:
+            # Handle the case where no audio input was detected within the timeout
+            print("Listening timed out. No audio input detected.")
+            speak("I didn't hear anything. Could you please try again?")
+            return "Timeout"
 
     try:
         print("Recognizing...")
         user_input = r.recognize_google(audio, language='en-in')
         print(f"User said: {user_input}\n")
 
-    except Exception as e:
+    except sr.UnknownValueError:
+        # If speech was unintelligible
         speak("Sorry, I couldn't understand what you said. Please try again.")
         return "Say that again please..."
+    except sr.RequestError:
+        # Handle API or network issues
+        speak("I'm having trouble connecting to the recognition service.")
+        return "Connection error"
+
     return user_input
 
 def process_input(user_input):
@@ -90,7 +103,7 @@ def process_input(user_input):
     elif "open notepad" in user_input:
         npath = "C:\\Windows\\system32\\notepad.exe"
         speak("Opening Notepad...")
-        os.system(npath)
+        subprocess.Popen(npath)
         return "Opening Notepad..."
     
     elif "close notepad" in user_input:
@@ -98,8 +111,8 @@ def process_input(user_input):
         speak("Closing Notepad...")
     
     elif "open command prompt" in user_input:
-        os.system("start cmd")
         speak("Opening Command Prompt...")
+        subprocess.Popen("cmd.exe", shell=True)  # Opens Command Prompt without blocking
         return "Opening Command Prompt..."
 
     elif "close command prompt" in user_input:
