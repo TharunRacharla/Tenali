@@ -47,7 +47,7 @@ def process_input(user_input):
         speak("Sir, what should I search on google?")
         user_input = takeCommand().lower()
         import wikipedia as googleScrap
-        user_input = user_input.replace("Tenali","")
+        user_input = user_input.replace("AI Buddy","")
         user_input = user_input.replace("google search","")
         user_input = user_input.replace("google","")
         speak("This is what I found on google")
