@@ -1,8 +1,10 @@
-from .ai_buddy import speak, takeCommand, process_input
+from .ai_buddy import process_input
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 import datetime
+from .actuators import speak
+from .sensors import listen
 
 # Greeting function endpoint
 @require_http_methods(["GET"])
@@ -25,7 +27,7 @@ def wish_me(request):
 def home(request):
    
     if request.method == "POST":
-        user_input = takeCommand().lower()
+        user_input = listen().lower()
         # Process other inputs normally
         response = process_input(user_input)
         return JsonResponse({"user_input": user_input, "response": response, "stop": False})

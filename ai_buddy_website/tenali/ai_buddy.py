@@ -4,6 +4,8 @@ import smtplib, pyjokes, requests, time
 from bs4 import BeautifulSoup as bs
 import cv2, spacy, subprocess
 from .weather_bot import get_weather_info
+from .actuators import speak
+from .sensors import listen
 
 # to send email
 def sendEmail(to, content):
@@ -13,53 +15,13 @@ def sendEmail(to, content):
     server.starttls()
     server.login('tharunracharla06442@gmail', 'your_password')
     server.sendmail('your_email', to, content)
-    server.close()
-
-def speak(audio):
-    engine = pyttsx3.init('sapi5')  # Initialize a new engine instance each time
-    voices = engine.getProperty('voices')
-    engine.setProperty('voice', voices[0].id)
-    engine.setProperty('rate', 180) 
-    engine.say(audio)
-    engine.runAndWait()
-    engine.stop()  # Stop the engine to close the loop
-    print(audio)
-
-def takeCommand():
-    r = sr.Recognizer()
-    with sr.Microphone() as source:
-        print("Listening...")
-        r.pause_threshold = 1
-        try:
-            # Attempt to listen with specified timeout and phrase time limit
-            audio = r.listen(source, timeout=5, phrase_time_limit=15)
-        except sr.WaitTimeoutError:
-            # Handle the case where no audio input was detected within the timeout
-            print("Listening timed out. No audio input detected.")
-            speak("I didn't hear anything. Could you please try again?")
-            return "Timeout"
-
-    try:
-        print("Recognizing...")
-        user_input = r.recognize_google(audio, language='en-in')
-        print(f"User said: {user_input}\n")
-
-    except sr.UnknownValueError:
-        # If speech was unintelligible
-        speak("Sorry, I couldn't understand what you said. Please try again.")
-        return "Say that again please..."
-    except sr.RequestError:
-        # Handle API or network issues
-        speak("I'm having trouble connecting to the recognition service.")
-        return "Connection error"
-
-    return user_input
+    server.close()  
 
 def process_input(user_input):
     #run_google.py
     if "open google" in user_input:
         speak("Sir, what should I search on google?")
-        user_input = takeCommand().lower()
+        user_input = listen().lower()
         import wikipedia as googleScrap
         user_input = user_input.replace("AI Buddy","")
         user_input = user_input.replace("google search","")
@@ -73,62 +35,53 @@ def process_input(user_input):
 
         except:
             speak("No speakable output available")
-
     #run_youtube.py
     elif "open youtube" in user_input:
         webbrowser.open("https://www.youtube.com")
         speak("Opening YouTube...")
         return "Opening YouTube..."
-
     #run_youtube.py
     elif "play songs on youtube" in user_input:
         speak("Sir, which song do you want to listen?")
-        search = takeCommand().lower()
+        search = listen().lower()
         kit.playonyt(search)
         speak(f"playing {search} on youtube")
-
     #run_email.py
     elif "send email to tharun" in user_input:
         try:            
             speak("What should I say?")
-            content = takeCommand().lower()
+            content = listen().lower()
             to = "tharunracharla06442@gmail.com"
             sendEmail(to, content)
             speak("Email has been sent to Tharun!")
         except Exception as e:
             print(e)
             speak("Sorry. I am not able to send this email to tharun...")
-
     #run_whatsapp.py
     elif "open whatsapp" in user_input:
         webbrowser.open("https://web.whatsapp.com")
         speak("Opening WhatsApp.... Scan the Code to Open your Whatsapp....")
         return "Opening WhatsApp..."
-    
     #run_notepad.py
     elif "open notepad" in user_input:
         npath = "C:\\Windows\\system32\\notepad.exe"
         speak("Opening Notepad...")
         subprocess.Popen(npath)
         return "Opening Notepad..."
-    
     #run_notepad.py
     elif "close notepad" in user_input:
         os.system("taskkill /f /im notepad.exe")
         speak("Closing Notepad...")
-    
     #run_cmd.py
     elif "open command prompt" in user_input:
         speak("Opening Command Prompt...")
         subprocess.Popen("cmd.exe", shell=True)  # Opens Command Prompt without blocking
         return "Opening Command Prompt..."
-
     #run_cmd.py
     elif "close command prompt" in user_input:
         os.system("taskkill /f /im cmd.exe")
         speak("Closing Command Prompt...")
         return "Closing Command Prompt..."
-
     #run_camera.py
     elif "open camera" in user_input:
         cap = cv2.VideoCapture(0)
@@ -140,7 +93,6 @@ def process_input(user_input):
                 break
         cap.release()
         cv2.destroyAllWindows()
-
     elif "play music" in user_input:
         music_dir = "C:\\Users\\HP\\Music\\Anime Bangers🍜_SpotifyDown_com"
         songs = os.listdir(music_dir)
@@ -148,24 +100,19 @@ def process_input(user_input):
             os.startfile(os.path.join(music_dir, random.choice(songs)))
             speak("Playing Music...")
         return "Playing Music..."
-
     elif "the time" in user_input:
         speak(f"Current time is {datetime.datetime.now().strftime('%H:%M:%S')}")
         return f"Current time is {datetime.datetime.now().strftime('%H:%M:%S')}"
-
     elif "the date" in user_input:
         speak(f"Current date is {datetime.datetime.now().strftime('%d/%m/%Y')}")
         return f"Current date is {datetime.datetime.now().strftime('%d/%m/%Y')}"
-
     elif "tell me a joke" in user_input:
         speak(pyjokes.get_joke())
         return pyjokes.get_joke()
-
     elif "shut down the system" in user_input:
         speak("Shutting down the system...")
         os.system("shutdown /s /t 5")
         return "Shutting down the system..."
-    
     elif "restart the system" in user_input:
         speak("Restarting the system...")
         os.system("shutdown /r /t 5")
@@ -173,8 +120,7 @@ def process_input(user_input):
     elif "sleep the system" in user_input:
         speak("Sleeping the system...")
         os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
-        return "Sleeping the system..."
-    
+        return "Sleeping the system..."   
     #to set alarm
     elif "set alarm" in user_input:
         nn = int(datetime.datetime.now().hour)
@@ -200,15 +146,13 @@ def process_input(user_input):
         data = bs(r.text,"html.parser")
         temp = data.find("div", class_ = "BNeawe").text
         speak(f"current{search} is {temp}")
-    
     #weather_bot.py
     elif "weather" in user_input:
         weather_info = get_weather_info(user_input)
         speak(weather_info)
-
     elif "send message" in user_input:
         speak("What should I say?")
-        message = takeCommand().lower()
+        message = listen().lower()
         kit.sendwhatmsg("+91---", message, datetime.datetime.now().hour, datetime.datetime.now().minute + 2)
         speak("Message sent!")
         return "Message sent!"
@@ -216,31 +160,9 @@ def process_input(user_input):
         speak("Thanks for using me. Have a nice day!")
         return 'exit'   
     elif "wake up" in user_input:
+        
         return "wake up buddy"
 
-    time.sleep(2)
+    time.sleep(1)
     speak("Sir, do you have any other work?")
     return "wake up buddy"
-
-
-
-
-# def wishMeDecorator(func):
-#     def wrapper(*args, **kwargs):
-#         # Get the current hour
-#         hour = int(datetime.datetime.now().hour)
-
-#         # Determine greeting based on the time of day
-#         if 0 <= hour < 12:
-#             speak("Good Morning!")
-#         elif 12 <= hour < 18:
-#             speak("Good Afternoon!")
-#         else:
-#             speak("Good Evening!")
-        
-#         # Personalized message
-#         speak("I am AI Buddy. How may I help you?")
-        
-#         # Call the original function
-#         return func(*args, **kwargs)
-#     return wrapper
