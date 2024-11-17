@@ -98,9 +98,9 @@ def process_input(user_input):
         speak("According to Wikipedia")
         speak(results)
         return results
-    elif "no thanks" in user_input:
-        speak("Thanks for using me. Have a nice day!")
-        return "Exit"
+    # elif "no thanks" in user_input:
+    #     speak("Thanks for using me. Have a nice day!")
+    #     return "Exit"
 
     time.sleep(1)
     speak("Sir, do you have any other work?")
