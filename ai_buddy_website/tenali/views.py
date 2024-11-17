@@ -25,9 +25,14 @@ def wish_me(request):
 # Main home view
 @require_http_methods(["GET", "POST"])
 def home(request):
-   
     if request.method == "POST":
         user_input = listen().lower()
+
+        # Handle "no thanks" or "exit" commands
+        if user_input in ["no thanks", "exit"]:
+            response = "Thanks for using me. Have a nice day!"
+            return JsonResponse({"user_input": user_input, "response": response, "stop": True})
+
         # Process other inputs normally
         response = process_input(user_input)
         return JsonResponse({"user_input": user_input, "response": response, "stop": False})

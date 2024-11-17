@@ -155,33 +155,34 @@
 								csrfmiddlewaretoken: '{{ csrf_token }}',
 							},
 							success: function (data) {
-								$('#recognizing-animation').hide();
+									$('#recognizing-animation').hide();
 
-								// Check if the conversation should stop
-								if (data.user_input === 'exit') {
-									$('#conversation').append(
-										`<p><strong>AI Buddy:</strong> ${data.response}</p>`
-									);
-									stopConversation = true; // Stop further processing
-									return;
-								}
+									// Check if the conversation should stop
+									if (data.stop) {
+										$('#conversation').append(
+											`<p><strong>AI Buddy:</strong> ${data.response}</p>`
+										);
+										stopConversation = true; // Stop further processing
+										return;
+									}
 
-								// Restart conversation if "wake up buddy"
-								if (data.user_input.toLowerCase() === 'wake up buddy') {
-									stopConversation = false; // Reset flag
-									$('#conversation').append(
-										`<p><strong>AI Buddy:</strong> Hello again! What can I do for you?</p>`
-									);
-									startConversation(); // Restart the conversation
-									return;
-								}
+									// Restart conversation if "wake up buddy"
+									if (data.user_input.toLowerCase() === 'wake up buddy') {
+										stopConversation = false; // Reset flag
+										$('#conversation').append(
+											`<p><strong>AI Buddy:</strong> Hello again! What can I do for you?</p>`
+										);
+										startConversation(); // Restart the conversation
+										return;
+									}
 
-								const newResponse = `<p><strong>User:</strong> ${data.user_input}</p><p><strong>AI Buddy:</strong> ${data.response}</p>`;
-								$('#conversation').append(newResponse);
-								scrollToBottom();
+									const newResponse = `<p><strong>User:</strong> ${data.user_input}</p><p><strong>AI Buddy:</strong> ${data.response}</p>`;
+									$('#conversation').append(newResponse);
+									scrollToBottom();
 
-								startConversation();
-							},
+									startConversation(); // Continue the conversation
+								},
+
 							error: function (xhr, status, error) {
 								$('#recognizing-animation').hide();
 								const errorMessage = `<p><strong>Error:</strong> ${error}</p>`;
