@@ -26,6 +26,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 
+# Define STATIC_ROOT for collectstatic
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Other static settings
+STATIC_URL = '/static/'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -59,7 +65,7 @@ ROOT_URLCONF = 'ai_buddy_website.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['ai_buddy_website/tenali/templates'],
+        'DIRS': [BASE_DIR / 'templates'],  # Global templates directory
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

@@ -19,9 +19,9 @@ from django.urls import path
 from tenali import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', views.home, name='home'),  # The home view
-    path('wish-me/', views.wish_me, name='wish-me'),  # Endpoint for greeting
-    path('recognize/', views.home, name='recognize'),  # Endpoint for recognizing user input
+    path('admin/', admin.site.urls),  # Admin panel
+    path('', views.home, name='home'),  # Greeting page
+    path('wish-me/', views.wish_me, name='wish-me-alias'),
+    path('recognize/', views.home, name='recognize'),  # Command recognition
 ]
 

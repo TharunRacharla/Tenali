@@ -22,5 +22,5 @@ db.sqlite3
 *.log
 .env
 
-further_scope/
+# further_scope/
 PyWhatKit_DB.txt

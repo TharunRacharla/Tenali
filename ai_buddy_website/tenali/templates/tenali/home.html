@@ -1,228 +1,33 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<title>AI Buddy</title>
-		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	</head>
-	<style>
-		body {
-			background-color: #121212;
-			color: #ffffff;
-			font-family: Arial, sans-serif;
-			height: 100vh;
-			display: flex;
-			flex-direction: column;
-			justify-content: flex-end;
-			align-items: center;
-			margin: 0;
-			overflow: hidden; /* Prevent overflow from bubbles */
-		}
+<html lang="en">
+<head>
+    {% load static %}
+    <title>AI Buddy</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // CSRF token setup for AJAX
+        const csrftoken = '{{ csrf_token }}';
+        $.ajaxSetup({
+            headers: { 'X-CSRFToken': csrftoken }
+        });
+    </script>
+    <link rel="stylesheet" href="{% static 'tenali/css/style.css' %}">
+</head>
+<body>
+    <div id="bubble-container"></div>
+    <div id="chat-form">
+        <h1 class="text-center">Welcome to AI Buddy</h1>
 
-		#chat-form {
-			position: fixed;
-			bottom: 10px;
-			width: 90%;
-			max-width: 600px;
-			background: rgba(0, 0, 0, 0.8);
-			padding: 20px;
-			border-radius: 10px;
-			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-			text-align: center;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: 10px;
-		}
+        <!-- Conversation Display Section -->
+        <div id="conversation"></div>
 
-		h1 {
-			margin: 0;
-		}
+        <!-- Listening and Recognizing Animations -->
+        <div id="listening-animation" class="animation-state">Listening...</div>
+        <div id="recognizing-animation" class="animation-state">
+            Recognizing...
+        </div>
+    </div>
 
-		#conversation {
-			width: 100%;
-			height: 200px; /* Fixed height for conversation display */
-			overflow-y: auto; /* Allow scrolling if content overflows */
-			background: #222;
-			border-radius: 5px;
-			padding: 10px;
-		}
-
-		.animation-state {
-			display: none; /* Initially hidden */
-			padding: 10px;
-			background: rgba(255, 235, 59, 0.8);
-			border-radius: 5px;
-		}
-
-		/* Show the animation when active */
-		.active {
-			display: block;
-		}
-
-		@media (max-width: 600px) {
-			h1 {
-				font-size: 24px;
-			}
-
-			#conversation {
-				height: 150px; /* Smaller height on mobile */
-			}
-
-			.animation-state {
-				font-size: 14px;
-			}
-		}
-
-		#bubble-container {
-			position: absolute;
-			top: 0;
-			width: 100%;
-			height: 100%;
-			overflow: hidden;
-			pointer-events: none;
-		}
-		.bubble {
-			position: absolute;
-			bottom: -50px;
-			width: 20px;
-			height: 20px;
-			background-color: rgba(135, 206, 235, 0.6);
-			border-radius: 50%;
-			animation: bubble 15s linear infinite;
-		}
-		@keyframes bubble {
-			0% {
-				transform: translateY(0) scale(1);
-			}
-			50% {
-				transform: translateY(-800px) scale(1.5);
-			}
-			100% {
-				transform: translateY(0) scale(1);
-			}
-		}
-	</style>
-	<body>
-		<div id="bubble-container"></div>
-		<div id="chat-form">
-			<h1 class="text-center">Welcome to AI Buddy</h1>
-
-			<!-- Conversation Display Section -->
-			<div id="conversation"></div>
-
-			<!-- Listening and Recognizing Animations -->
-			<div id="listening-animation" class="animation-state">Listening...</div>
-			<div id="recognizing-animation" class="animation-state">
-				Recognizing...
-			</div>
-		</div>
-
-		<script>
-			$(document).ready(function () {
-				let greeted = false;
-				let stopConversation = false;
-
-				function startConversation() {
-					if (stopConversation) return;
-					
-					// Greet once
-					if (!greeted) {
-						greeted = true;
-						
-						$.ajax({
-							url: '/wish-me/', // Ensure this URL is correct
-							type: 'GET',
-							success: function (data) {
-								$('#conversation').append(
-									`<p><strong>AI Buddy:</strong> ${data.greeting}</p>`
-								);
-							},
-						});
-					}
-
-					$('#listening-animation').show();
-					$('#recognizing-animation').hide();
-
-					// Simulate listening, waits 2 seconds before recognizing
-					setTimeout(function () {
-						$('#listening-animation').hide();
-						$('#recognizing-animation').show();
-
-						$.ajax({
-							url: '/recognize/', // Replace with your endpoint
-							type: 'POST',
-							data: {
-								csrfmiddlewaretoken: '{{ csrf_token }}',
-							},
-							success: function (data) {
-									$('#recognizing-animation').hide();
-
-									// Check if the conversation should stop
-									if (data.stop) {
-										$('#conversation').append(
-											`<p><strong>AI Buddy:</strong> ${data.response}</p>`
-										);
-										stopConversation = true; // Stop further processing
-										return;
-									}
-
-									// Restart conversation if "wake up buddy"
-									if (data.user_input.toLowerCase() === 'wake up buddy') {
-										stopConversation = false; // Reset flag
-										$('#conversation').append(
-											`<p><strong>AI Buddy:</strong> Hello again! What can I do for you?</p>`
-										);
-										startConversation(); // Restart the conversation
-										return;
-									}
-
-									const newResponse = `<p><strong>User:</strong> ${data.user_input}</p><p><strong>AI Buddy:</strong> ${data.response}</p>`;
-									$('#conversation').append(newResponse);
-									scrollToBottom();
-
-									startConversation(); // Continue the conversation
-								},
-
-							error: function (xhr, status, error) {
-								$('#recognizing-animation').hide();
-								const errorMessage = `<p><strong>Error:</strong> ${error}</p>`;
-								$('#conversation').append(errorMessage);
-							},
-						});
-					}, 2000); // Time delay to simulate recognizing state
-				}
-
-				startConversation();
-			});
-
-			// Bubble Animation
-			const bubbleContainer = document.getElementById('bubble-container');
-			function createBubbles() {
-				for (let i = 0; i < 50; i++) {
-					const bubble = document.createElement('div');
-					bubble.classList.add('bubble');
-					bubble.style.width = bubble.style.height = `${getRandomInt(
-						10,
-						60
-					)}px`;
-					bubble.style.left = `${getRandomInt(0, window.innerWidth)}px`;
-					bubble.style.animationDuration = `${getRandomInt(10, 20)}s`;
-					bubbleContainer.appendChild(bubble);
-				}
-			}
-			function getRandomInt(min, max) {
-				return Math.floor(Math.random() * (max - min)) + min;
-			}
-			createBubbles();
-
-			// AutoScroll function
-			function scrollToBottom() {
-				const conversationDiv = document.getElementById('conversation');
-				conversationDiv.scrollTop = conversationDiv.scrollHeight;
-			}
-
-			// Scroll to the bottom after adding the new message
-			scrollToBottom();
-		</script>
-	</body>
+    <script src="{% static 'tenali/js/script.js' %}"></script>
+</body>
 </html>

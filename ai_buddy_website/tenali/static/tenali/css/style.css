@@ -1,0 +1,116 @@
+body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden; /* Prevent overflow from bubbles */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+#chat-form {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 600px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+h1 {
+    margin: 0;
+}
+
+#conversation {
+    width: 100%;
+    height: 200px; /* Fixed height for conversation display */
+    overflow-y: auto; /* Allow scrolling if content overflows */
+    background: #222;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.animation-state {
+    display: none; /* Initially hidden */
+    padding: 10px;
+    background: rgba(255, 235, 59, 0.8);
+    border-radius: 5px;
+}
+
+/* Show the animation when active */
+.active {
+    display: block;
+}
+
+@media (max-width: 600px) {
+    h1 {
+        font-size: 24px;
+    }
+
+    #conversation {
+        height: 150px; /* Smaller height on mobile */
+    }
+
+    .animation-state {
+        font-size: 14px;
+    }
+}
+
+#bubble-container {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: -1; /* Ensure bubbles stay in the background */
+}
+
+.bubble {
+    position: absolute;
+    bottom: -50px;
+    width: 20px;
+    height: 20px;
+    background-color: rgba(135, 206, 235, 0.3); /* Subtle bubbles */
+    border-radius: 50%;
+    animation: bubble 20s linear infinite;
+}
+
+@keyframes bubble {
+    0% {
+        transform: translateY(0) scale(0.8);
+    }
+    50% {
+        transform: translateY(-100vh) scale(1.5);
+    }
+    100% {
+        transform: translateY(-100vh) scale(1);
+    }
+}
+
+@media (max-width: 400px) {
+    #chat-form {
+        width: 95%;
+    }
+
+    .bubble {
+        width: 10px;
+        height: 10px;
+    }
+
+    #conversation {
+        height: 120px;
+    }
+}
