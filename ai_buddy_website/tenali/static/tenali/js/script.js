@@ -1,13 +1,23 @@
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
 $(document).ready(function () {
     let greeted = false; // Track if the user has been greeted
     let stopConversation = false; // Track if the conversation should stop
-
-    // Setup CSRF token for AJAX requests
-    // $.ajaxSetup({
-    //     headers: {
-    //         'X-CSRFToken': $('meta[name="csrf-token"]').attr('content'),
-    //     },
-    // });
 
     function startConversation() {
         if (stopConversation) return; // End the function if conversation is stopped
@@ -31,7 +41,11 @@ $(document).ready(function () {
                 },
             });
         }
-
+        $.ajaxSetup({
+            headers: {
+                'X-CSRFToken': csrftoken
+            }
+        });
         // Start listening animation
         $('#listening-animation').show();
         $('#recognizing-animation').hide();
@@ -41,14 +55,14 @@ $(document).ready(function () {
             // Hide listening animation and show recognizing animation
             $('#listening-animation').hide();
             $('#recognizing-animation').show();
-
+            
             // Send POST request to recognize user input
             $.ajax({
                 url: '/recognize/', // Endpoint for command recognition
                 type: 'POST',
                 // contentType: 'application/json', // Send JSON payload
                 data: {
-                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    //
                 },
                 success: function (data) {
                     // Hide recognizing animation

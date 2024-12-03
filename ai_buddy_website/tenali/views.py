@@ -5,11 +5,11 @@ from django.views.decorators.http import require_http_methods
 import datetime
 from .actuators import speak
 from .sensors import listen
-from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie, csrf_exempt
 import json
 
 # Greeting function endpoint
-@ensure_csrf_cookie
+@csrf_exempt
 @require_http_methods(["GET"])
 def wish_me(request):
     hour = datetime.datetime.now().hour
@@ -27,7 +27,7 @@ def wish_me(request):
     return render(request, "tenali/home.html", {"greeting": greeting})
 
 # Main home view
-@csrf_protect
+@csrf_exempt
 @require_http_methods(["GET", "POST"])
 def home(request):
     if request.method == "POST":
