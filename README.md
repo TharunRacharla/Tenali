@@ -5,7 +5,6 @@ Welcome to the **Tenali Raman AI Buddy** project! This is a personal AI assistan
 ## Features
 
 - Conversational interface inspired by Tenali Raman.
-- Set, view, and delete reminders.
 - Modular structure for easy feature expansion.
 
 ## Prerequisites
