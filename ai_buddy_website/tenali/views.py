@@ -7,11 +7,13 @@ from .actuators import speak
 from .sensors import listen
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie, csrf_exempt
 import json
+from playsound3 import playsound
 
 # Greeting function endpoint
 @csrf_exempt
 @require_http_methods(["GET"])
 def wish_me(request):
+    playsound("tenali\\assets\\sound_effects\\mixkit-high-tech-bleep-confirmation-2520.wav", block=True)
     hour = datetime.datetime.now().hour
     if hour < 12:
         greeting = "Good Morning!"

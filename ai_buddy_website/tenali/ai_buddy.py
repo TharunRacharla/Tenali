@@ -98,6 +98,13 @@ def process_input(user_input):
         speak("According to Wikipedia")
         speak(results)
         return results
+    
+    elif "weather" in user_input:
+        speak("Fetching weather information...")
+        info = get_weather_info(user_input)
+        speak(info)
+        return get_weather_info(user_input)
+    
     # elif "no thanks" in user_input:
     #     speak("Thanks for using me. Have a nice day!")
     #     return "Exit"
