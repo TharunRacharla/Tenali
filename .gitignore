@@ -22,5 +22,8 @@ db.sqlite3
 *.log
 .env
 
+# trained NLU model
+tenali/ml_models/nlu_model/
+
 # further_scope/
 PyWhatKit_DB.txt

@@ -1,10 +1,17 @@
+import os
+import re
 import requests
 
-# Set your OpenWeatherMap API key
-API_KEY = "ef4b63432237462678bcac31be6d05b9"
+# Load OpenWeatherMap API key from environment
+API_KEY = os.getenv("OPENWEATHER_API_KEY")
+if not API_KEY:
+    # Don't raise on import; the functions will return helpful messages when used
+    print("Warning: OPENWEATHER_API_KEY not set. Weather queries will return an explanatory message.")
 
 # Nominatim geocoding endpoint
 GEOCODE_URL = "https://nominatim.openstreetmap.org/search"
+# OpenWeatherMap API endpoint (use HTTPS)
+OWM_URL = "https://api.openweathermap.org/data/2.5/weather"
 
 def get_coordinates(location):
     # Use the 'q' parameter for the location, 'format=json' to get the response in JSON
@@ -40,30 +47,56 @@ def get_coordinates(location):
 
 
 def get_weather_info(user_input):
-    # Extract city name (simple example assumes the city is in the input)
-    city = user_input.split("in")[-1].strip()
+    # Extract city name using regex (supports "weather in <city>") or fallback
+    m = re.search(r'in\s+(.+)$', user_input, re.IGNORECASE)
+    if m:
+        city = m.group(1).strip()
+    else:
+        # Try to remove the trigger word "weather" and use the rest
+        city = user_input.lower().replace('weather', '').strip()
+        if not city:
+            return "Please specify a city, e.g., 'weather in London'."
+
+    # Check API key
+    if not API_KEY:
+        return "Weather API key not configured. Please set OPENWEATHER_API_KEY in .env."
 
     lat, lon = get_coordinates(city)
-    
-    if lat and lon:
-        # Construct the weather API request using lat/lon
-        url = f"http://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API_KEY}&units=metric"
-        response = requests.get(url)
-        
-        if response.status_code == 200:
-            data = response.json()
+    if not lat or not lon:
+        return f"Sorry, I couldn't find coordinates for {city}."
 
-            temperature = data["main"]["temp"]
-            weather_description = data["weather"][0]["description"]
-            humidity = data["main"]["humidity"]
-            wind_speed = data["wind"]["speed"]
+    try:
+        params = {
+            'lat': lat,
+            'lon': lon,
+            'appid': API_KEY,
+            'units': 'metric'
+        }
+        response = requests.get(OWM_URL, params=params, timeout=10)
+        response.raise_for_status()
+        data = response.json()
 
-            weather_info = (
-                f"Current weather in {city}:\n"
-                f"Temperature: {temperature}°C\n"
-                f"Condition: {weather_description.capitalize()}\n"
-                f"Humidity: {humidity}%\n"
-                f"Wind Speed: {wind_speed} m/s"
-            )
-            return weather_info
-    return f"Sorry, I couldn't retrieve the weather information for {city}."
+        temperature = data.get('main', {}).get('temp')
+        weather_description = data.get('weather', [{}])[0].get('description', 'N/A')
+        humidity = data.get('main', {}).get('humidity', 'N/A')
+        wind_speed = data.get('wind', {}).get('speed', 'N/A')
+
+        weather_info = (
+            f"Current weather in {city}:\n"
+            f"Temperature: {temperature}°C\n"
+            f"Condition: {weather_description.capitalize()}\n"
+            f"Humidity: {humidity}%\n"
+            f"Wind Speed: {wind_speed} m/s"
+        )
+        return weather_info
+    except requests.exceptions.HTTPError as e:
+        # Common cause: invalid API key (401) or bad request
+        try:
+            status = response.status_code
+        except Exception:
+            status = 'unknown'
+        if status == 401:
+            return "Invalid OpenWeather API key. Please check OPENWEATHER_API_KEY."
+        return f"Error fetching weather data (status {status}): {e}"
+    except requests.exceptions.RequestException as e:
+        return f"Network error while retrieving weather information: {e}"

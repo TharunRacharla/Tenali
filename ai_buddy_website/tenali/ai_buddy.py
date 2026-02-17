@@ -1,24 +1,37 @@
 import datetime, webbrowser, wikipedia
 import os, random, pywhatkit as kit
-import smtplib, pyjokes, requests, time
-from bs4 import BeautifulSoup as bs
-import cv2, subprocess
+import smtplib, pyjokes, time
 from .weather_bot import get_weather_info
 from .actuators import speak
 from .sensors import listen
 from .run_google import run_google
+from .run_notepad import run_notepad
+from .nlp_engine import parse_input
 
 # Global state to track if the assistant is active or asleep
 active = True
 
 def sendEmail(to, content):
     """Sends an email to the specified recipient with the given content."""
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.ehlo()
-    server.starttls()
-    server.login('tharunracharla06442@gmail', 'your_password')
-    server.sendmail('your_email', to, content)
-    server.close()
+    # Read email credentials from environment variables
+    EMAIL_USER = os.getenv("EMAIL_USER")
+    EMAIL_PASS = os.getenv("EMAIL_PASS")
+    EMAIL_FROM = os.getenv("EMAIL_FROM", EMAIL_USER)
+    if not EMAIL_USER or not EMAIL_PASS:
+        speak("Email credentials are not configured. Please set EMAIL_USER and EMAIL_PASS in .env.")
+        return "EmailNotConfigured"
+    try:
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.ehlo()
+        server.starttls()
+        server.login(EMAIL_USER, EMAIL_PASS)
+        server.sendmail(EMAIL_FROM, to, content)
+        server.quit()
+        return "EmailSent"
+    except Exception as e:
+        print(e)
+        speak("Sorry. I am not able to send this email.")
+        return "EmailFailed"
 
 def process_input(user_input):
     global active
@@ -39,6 +52,9 @@ def process_input(user_input):
         active = False
         speak("I am going to sleep now. Say 'wake up' to activate me.")
         return "Sleeping"
+
+    # Use NLU to parse intent & entities
+    parsed = parse_input(user_input)
 
     # Remaining Commands (only processed when active)
     if "open google" in user_input:
@@ -63,7 +79,7 @@ def process_input(user_input):
         except Exception as e:
             print(e)
             speak("Sorry. I am not able to send this email to Tharun.")
-        return "Email Sent"
+        return "Email Sent" 
     elif "play music" in user_input:
         music_dir = "C:\\Users\\HP\\Music\\Anime Bangers🍜_SpotifyDown_com"
         songs = os.listdir(music_dir)
@@ -98,12 +114,19 @@ def process_input(user_input):
         speak("According to Wikipedia")
         speak(results)
         return results
-    
-    elif "weather" in user_input:
+    elif "write a note" in user_input:
+        run_notepad()
+    # Use NLU to parse intent & entities
+
+    elif parsed.get('intent') == 'weather' or "weather" in user_input:
+        city = parsed.get('entities', {}).get('city')
         speak("Fetching weather information...")
-        info = get_weather_info(user_input)
+        if city:
+            info = get_weather_info(f"weather in {city}")
+        else:
+            info = get_weather_info(user_input)
         speak(info)
-        return get_weather_info(user_input)
+        return info
     
     # elif "no thanks" in user_input:
     #     speak("Thanks for using me. Have a nice day!")

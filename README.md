@@ -47,6 +47,16 @@ Install the required packages:
 pip install -r requirements.txt
 ~~~
 
+Create a `.env` file (copy from `.env.sample`) and add your secrets:
+
+```
+SECRET_KEY=your_django_secret_key_here
+OPENWEATHER_API_KEY=your_openweather_api_key_here
+EMAIL_USER=your_email@example.com
+EMAIL_PASS=your_email_password_or_app_password
+EMAIL_FROM=optional_from_email
+```
+
 Run database migrations:
 ~~~
 python manage.py migrate
