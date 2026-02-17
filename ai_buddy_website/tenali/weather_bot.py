@@ -1,6 +1,9 @@
 import os
 import re
 import requests
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Load OpenWeatherMap API key from environment
 API_KEY = os.getenv("OPENWEATHER_API_KEY")
@@ -14,7 +17,14 @@ GEOCODE_URL = "https://nominatim.openstreetmap.org/search"
 OWM_URL = "https://api.openweathermap.org/data/2.5/weather"
 
 def get_coordinates(location):
-    # Use the 'q' parameter for the location, 'format=json' to get the response in JSON
+    """Get latitude and longitude for a location using Nominatim geocoding API.
+    
+    Args:
+        location (str): Location name (city, address, etc.)
+    
+    Returns:
+        tuple: (latitude, longitude) or (None, None) if location not found
+    """
     params = {
         'q': location,
         'format': 'json',
@@ -47,7 +57,14 @@ def get_coordinates(location):
 
 
 def get_weather_info(user_input):
-    # Extract city name using regex (supports "weather in <city>") or fallback
+    """Fetch and return weather information for a specified location.
+    
+    Args:
+        user_input (str): User input in format "weather in <city>" or city name
+    
+    Returns:
+        str: Formatted weather information or error message
+    """
     m = re.search(r'in\s+(.+)$', user_input, re.IGNORECASE)
     if m:
         city = m.group(1).strip()

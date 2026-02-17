@@ -1,6 +1,17 @@
 import speech_recognition as sr
+import logging
+
+logger = logging.getLogger(__name__)
 
 def listen():
+    """Listen to user voice input and convert to text using Google Speech API.
+    
+    Returns:
+        str: Recognized text from user, or an error message if recognition failed
+    
+    Raises:
+        No exceptions; returns error messages as strings instead
+    """
     r = sr.Recognizer()
     with sr.Microphone() as source:
         print("Listening...")

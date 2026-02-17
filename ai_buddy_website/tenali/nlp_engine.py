@@ -1,6 +1,9 @@
 import re
 from pathlib import Path
 import spacy
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Attempt to load a trained spaCy NLU model (optional)
 MODEL_PATH = Path(__file__).resolve().parent / 'ml_models' / 'nlu_model'
@@ -14,6 +17,14 @@ except Exception:
 
 
 def _predict_intent_with_model(text: str):
+    """Predict intent using trained spaCy NLU model.
+    
+    Args:
+        text (str): Input text to classify
+    
+    Returns:
+        tuple: (intent_name, confidence_score) or (None, 0.0) if model unavailable
+    """
     if not NLU_NLP:
         return None, 0.0
     doc = NLU_NLP(text)
@@ -52,7 +63,20 @@ def _normalize_intent(intent_name: str) -> str:
 
 
 def parse_input(text: str) -> dict:
-    """NLU parser: try ML model then fallback to rule-based heuristics."""
+    """Parse user input to extract intent and entities.
+    
+    Uses hybrid approach:
+    1. Attempts ML-based prediction with spaCy model (if available)
+    2. Falls back to rule-based pattern matching
+    
+    Args:
+        text (str): User input text
+    
+    Returns:
+        dict: {"intent": str, "entities": dict}
+            - intent: Detected command/intent name
+            - entities: Extracted information (e.g., city for weather queries)
+    """
     text = (text or '').strip()
 
     # Attempt ML prediction first
