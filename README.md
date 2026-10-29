@@ -2,7 +2,7 @@
 
 A browser-based personal assistant built with Django and Python. Chat by typing or, in supported browsers, use speech recognition to send a message.
 
-
+![AI Buddy chat interface](screenshot.png)
 
 ## Credits
 
