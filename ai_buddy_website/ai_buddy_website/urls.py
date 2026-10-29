@@ -20,8 +20,7 @@ from tenali import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),  # Admin panel
-    path('', views.home, name='home'),  # Greeting page
-    path('wish-me/', views.wish_me, name='wish-me-alias'),
-    path('recognize/', views.home, name='recognize'),  # Command recognition
+    path('', views.wish_me, name='home'),  # Greeting page
+    path('home/', views.home, name='home-page'),  # Main home page
 ]
 

@@ -267,9 +267,9 @@
                         "Tell me your name?"
                   ],
                   "responses": [
-                        "You can call me Geni",
-                        "You may call me Geni",
-                        "Call me Geni"
+                        "You can call me Tenali",
+                        "You may call me Tenali",
+                        "Call me Tenali"
                   ],
                   "extension":  {
                         "function": "",

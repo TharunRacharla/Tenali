@@ -1,12 +1,11 @@
 import datetime, webbrowser, wikipedia
 import os, random, pywhatkit as kit
-import smtplib, pyjokes, time, logging
+import smtplib, pyjokes, time, logging, re, subprocess, sys
+from pathlib import Path
 from .weather_bot import get_weather_info
 from .actuators import speak
-from .sensors import listen
-from .run_google import run_google
-from .run_notepad import run_notepad
 from .nlp_engine import parse_input
+from .run_google import run_google
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -30,22 +29,44 @@ def sendEmail(to, content):
     EMAIL_FROM = os.getenv("EMAIL_FROM", EMAIL_USER)
     if not EMAIL_USER or not EMAIL_PASS:
         msg = "Email credentials are not configured. Please set EMAIL_USER and EMAIL_PASS in .env."
-        speak(msg)
         logger.warning(msg)
         return "EmailNotConfigured"
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.ehlo()
-        server.starttls()
-        server.login(EMAIL_USER, EMAIL_PASS)
-        server.sendmail(EMAIL_FROM, to, content)
-        server.quit()
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.ehlo()
+            server.starttls()
+            server.login(EMAIL_USER, EMAIL_PASS)
+            refused_recipients = server.sendmail(EMAIL_FROM, to, content)
+            if refused_recipients:
+                logger.error("Email was refused for recipient(s): %s", refused_recipients)
+                return "EmailFailed"
         logger.info(f"Email sent to {to}")
         return "EmailSent"
     except Exception as e:
         logger.error(f"Failed to send email: {e}")
-        speak("Sorry. I am not able to send this email.")
         return "EmailFailed"
+
+
+def get_destructive_action(user_input):
+    """Return a supported destructive action requested by the input, if any."""
+    intent = parse_input(user_input).get("intent")
+    if intent in {"shutdown", "restart"}:
+        return intent
+    return None
+
+
+def execute_system_action(action):
+    """Execute a destructive system action after the caller has confirmed it."""
+    if action not in {"shutdown", "restart"}:
+        raise ValueError(f"Unsupported system action: {action}")
+
+    if sys.platform == "win32":
+        command = ["shutdown", "/s" if action == "shutdown" else "/r", "/t", "5"]
+    else:
+        command = ["shutdown", "-h" if action == "shutdown" else "-r", "+0"]
+
+    subprocess.run(command, check=True, timeout=10)
+    return "Shutting down" if action == "shutdown" else "Restarting"
 
 def process_input(user_input):
     """Process user input and execute corresponding AI buddy commands.
@@ -57,6 +78,7 @@ def process_input(user_input):
         str: Response message from AI buddy
     """
     global active
+    user_input = user_input.strip().lower()
 
     # Wake Up Command
     if "wake up" in user_input:
@@ -86,23 +108,37 @@ def process_input(user_input):
         speak("Opening YouTube...")
         return "Opening YouTube..."
     elif "play songs on youtube" in user_input:
-        speak("Sir, which song do you want to listen?")
-        search = listen().lower()
+        search = user_input.partition("play songs on youtube")[2].strip()
+        if not search:
+            response = "Please enter a song after 'play songs on YouTube'."
+            speak(response)
+            return response
         kit.playonyt(search)
         speak(f"Playing {search} on YouTube")
         return f"Playing {search} on YouTube"
-    elif "send email to tharun" in user_input:
-        try:
-            speak("What should I say?")
-            content = listen().lower()
-            speak("Whom should I send this to? Can you please provide the email address?")
-            to = listen().lower()
-            sendEmail(to, content)
-            speak("Email has been sent to Tharun!")
-        except Exception as e:
-            print(e)
-            speak("Sorry. I am not able to send this email to Tharun.")
-        return "Email Sent" 
+    elif parsed.get("intent") == "send_email":
+        email_match = re.fullmatch(
+            r"send email to ([^\s@]+@[^\s@]+) saying (.+)",
+            user_input.strip(),
+            re.IGNORECASE,
+        )
+        if not email_match:
+            response = "To send an email, enter: send email to address@example.com saying your message."
+            speak(response)
+            return response
+
+        status = sendEmail(email_match.group(1), email_match.group(2))
+        responses = {
+            "EmailSent": "Email sent successfully.",
+            "EmailNotConfigured": "Email could not be sent because email credentials are not configured.",
+            "EmailFailed": "Email could not be sent. Please check the recipient and email service settings.",
+        }
+        response = responses.get(
+            status,
+            "Email could not be sent because the email service returned an unknown status.",
+        )
+        speak(response)
+        return response
     elif "play music" in user_input:
         try:
             music_dir = os.getenv("MUSIC_DIRECTORY", os.path.expanduser("~/Music"))
@@ -116,7 +152,9 @@ def process_input(user_input):
                 speak("No MP3 files found in music directory")
                 return "No Music Files"
             song = random.choice(mp3_songs)
-            os.startfile(os.path.join(music_dir, song))
+            song_path = Path(music_dir, song).resolve()
+            if not webbrowser.open(song_path.as_uri()):
+                raise OSError(f"No application could open {song_path}")
             speak("Playing music...")
             logger.info(f"Playing song: {song}")
             return "Playing Music"
@@ -138,14 +176,11 @@ def process_input(user_input):
         joke = pyjokes.get_joke()
         speak(joke)
         return joke
-    elif "shut down the system" in user_input:
-        speak("Shutting down the system...")
-        os.system("shutdown /s /t 5")
-        return "Shutting Down"
-    elif "restart the system" in user_input:
-        speak("Restarting the system...")
-        os.system("shutdown /r /t 5")
-        return "Restarting"
+    elif parsed.get("intent") in {"shutdown", "restart"}:
+        action_name = "shut down" if parsed["intent"] == "shutdown" else "restart"
+        response = f"Please confirm if you want to {action_name} this computer."
+        speak(response)
+        return response
     elif "wikipedia" in user_input:
         try:
             speak("Searching Wikipedia...")
@@ -160,7 +195,14 @@ def process_input(user_input):
             speak("Sorry, I couldn't find information on Wikipedia.")
             return "Wikipedia Error"
     elif "write a note" in user_input:
-        run_notepad()
+        note_content = user_input.partition("write a note")[2].strip()
+        if not note_content:
+            response = "Please enter your note after 'write a note'."
+            speak(response)
+            return response
+        response = f"Note: {note_content}"
+        speak(response)
+        return response
     # Use NLU to parse intent & entities
 
     elif parsed.get('intent') == 'weather' or "weather" in user_input:

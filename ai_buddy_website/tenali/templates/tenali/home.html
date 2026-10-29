@@ -4,23 +4,30 @@
     {% load static %}
     <title>AI Buddy</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     <link rel="stylesheet" href="{% static 'tenali/css/style.css' %}">
 </head>
 <body>
     <div id="bubble-container"></div>
-    <div id="chat-form">
+    <main id="chat-form">
         <h1 class="text-center">Welcome to AI Buddy</h1>
 
-        <!-- Conversation Display Section -->
         <div id="conversation"></div>
 
-        <!-- Listening and Recognizing Animations -->
         <div id="listening-animation" class="animation-state">Listening...</div>
         <div id="recognizing-animation" class="animation-state">
-            Recognizing...
+            Processing...
         </div>
-    </div>
+
+        <form id="message-form">
+            {% csrf_token %}
+            <label for="user-input">Message</label>
+            <input id="user-input" name="text" type="text" maxlength="2000"
+                   autocomplete="off" placeholder="Type a message or use Speak" required>
+            <button type="submit" id="send-button">Send</button>
+            <button type="button" id="speak-button">Speak</button>
+        </form>
+        <p id="input-status" role="status" aria-live="polite"></p>
+    </main>
 
     <script src="{% static 'tenali/js/script.js' %}"></script>
 </body>

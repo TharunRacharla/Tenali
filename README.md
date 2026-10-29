@@ -1,100 +1,117 @@
 # Tenali Raman AI Buddy
 
-Welcome to the **Tenali Raman AI Buddy** project! This is a personal AI assistant inspired by the wit and wisdom of Tenali Raman, capable of handling daily tasks and managing reminders. The project is built using Python and Django, and it’s designed to be easily extendable for future features.
+A browser-based personal assistant built with Django and Python. Chat by typing or, in supported browsers, use speech recognition to send a message.
 
-## Features
+![AI Buddy chat interface](screenshot.png)
 
-- Conversational interface inspired by Tenali Raman.
-- Modular structure for easy feature expansion.
+## Credits
 
-## Prerequisites
+The frontend was created and handled by Ritik.
 
-Before you begin, ensure you have met the following requirements:
+## What it can do
 
-- **Python** (version 3.x)
-- **Pip** (Python package installer)
-- **Django** (version 3.x or above)
+- Accept typed messages and browser-recognized speech.
+- Answer time and date questions, tell jokes, and look up information on Wikipedia.
+- Search Google or open YouTube, and play a requested song on YouTube.
+- Get weather information when an OpenWeather API key is configured.
+- Send email through Gmail SMTP when email credentials are configured.
+- Request a system shutdown or restart with an explicit confirmation.
 
-## Installation
+Browser speech recognition depends on browser support and microphone permission. Typing remains available when speech recognition is unavailable.
 
-Follow these steps to set up the project locally:
+## Run locally
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/your_username/your_repository_name.git
-   cd your_repository_name
+### Requirements
 
-Create a virtual environment (optional but recommended):
-~~~
+- Python 3.10 or later
+- Pip
+- A browser for the chat interface
+
+### Setup
+
+Clone the repository and create a virtual environment from the repository root:
+
+```bash
+git clone https://github.com/TharunRacharla/Tenali.git
+cd Tenali
 python -m venv .venv
-~~~
+```
 
 Activate the virtual environment:
 
-On Windows:
-~~~
-.venv\Scripts\activate
-~~~
-On macOS/Linux:
-~~~
+```powershell
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+```
+
+```bash
+# macOS / Linux
 source .venv/bin/activate
-~~~
+```
 
+Install the project dependencies:
 
-Install the required packages:
-
-~~~
+```bash
 pip install -r requirements.txt
-~~~
-
-Create a `.env` file (copy from `.env.sample`) and add your secrets:
-
-```
-SECRET_KEY=your_django_secret_key_here
-OPENWEATHER_API_KEY=your_openweather_api_key_here
-EMAIL_USER=your_email@example.com
-EMAIL_PASS=your_email_password_or_app_password
-EMAIL_FROM=optional_from_email
 ```
 
-Run database migrations:
-~~~
+Copy `.env.sample` to `.env` in the repository root, then fill in the values you need. The Django secret key is required; weather and email settings are optional unless you want to use those features.
+
+```dotenv
+SECRET_KEY=replace-with-a-long-random-secret
+DEBUG=True
+ALLOWED_HOSTS=127.0.0.1,localhost
+
+# Optional: weather lookups
+OPENWEATHER_API_KEY=your_openweather_api_key
+
+# Optional: Gmail SMTP email
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_gmail_app_password
+EMAIL_FROM=your_email@gmail.com
+```
+
+For Gmail, use an app password where required; do not put real credentials in source control.
+
+Run the app from its Django project directory:
+
+```bash
+cd ai_buddy_website
 python manage.py migrate
-~~~
-
-Create a superuser (optional): If you want to access the Django admin site, create a superuser:
-~~~
-python manage.py createsuperuser
-~~~
-
-Run the development server:
-~~~
 python manage.py runserver
-~~~
+```
 
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
-#Access the application: Open your web browser and navigate to http://127.0.0.1:8000 to start using your AI buddy.
+## Try it
 
-#Usage
-Start a conversation by typing your input into the web interface.
-Use commands like "set reminder," "view reminders," and "delete reminder" to interact with the reminder functionality.
+Type a message, or select **Speak** and allow microphone access if your browser supports speech recognition.
 
-#Contributing
-If you would like to contribute to this project, please follow these steps:
+Example requests:
 
-1. Fork the repository.
-2. Create a new branch:
-~~~
-git checkout -b feature/YourFeature
-~~~
-3. Make your changes and commit them:
-~~~
-git commit -m "Add some feature"
-~~~
-4. Push to the branch:
-~~~
-git push origin feature/YourFeature
-~~~
-5. Open a Pull Request.
+```text
+What time is it?
+Tell me a joke
+What is the weather in Paris?
+Open Google Django documentation
+Play songs on YouTube lo-fi music
+Send email to recipient@example.com saying Hello from AI Buddy
+```
 
+Weather and email requests need their corresponding optional credentials in `.env`. Shutdown and restart requests require clicking **Confirm**; the confirmation expires after one minute and can be canceled.
 
+> **Important:** Shutdown and restart commands are executed on the computer running the Django server, not on the visitor's device. Run this project locally and do not expose it to untrusted users or the public internet with these actions enabled.
+
+## Run tests
+
+From `ai_buddy_website`, run:
+
+```bash
+python manage.py test tenali
+python manage.py check
+python manage.py makemigrations --check --dry-run
+```
+
+## Contributing
+
+Issues and pull requests are welcome. For a change, create a branch, make and test your update, and open a pull request with a concise description of the change.

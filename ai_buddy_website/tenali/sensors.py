@@ -4,36 +4,47 @@ import logging
 logger = logging.getLogger(__name__)
 
 def listen():
-    """Listen to user voice input and convert to text using Google Speech API.
-    
-    Returns:
-        str: Recognized text from user, or an error message if recognition failed
-    
-    Raises:
-        No exceptions; returns error messages as strings instead
-    """
-    r = sr.Recognizer()
-    with sr.Microphone() as source:
-        print("Listening...")
-        r.pause_threshold = 1
-        try:
-            # Attempt to listen with specified timeout and phrase time limit
-            audio = r.listen(source, timeout=5, phrase_time_limit=15)
-        except sr.WaitTimeoutError:
-            # Handle the case where no audio input was detected within the timeout
-            print("Listening timed out. No audio input detected.")
-            return "Timeout"
-
     try:
-        print("Recognizing...")
-        user_input = r.recognize_google(audio, language='en-in')
-        print(f"User said: {user_input}\n")
+        r = sr.Recognizer()
+        mics = sr.Microphone.list_microphone_names()
+        microphone_index = None
 
-    except sr.UnknownValueError:
-        # If speech was unintelligible
-        return "Say that again please..."
-    except sr.RequestError:
-        # Handle API or network issues
-        return "Connection error"
+        for idx, name in enumerate(mics):
+            if "microphone" in name.lower():
+                microphone_index = idx
+                logger.info(f"Using microphone: {name}")
+                break
 
-    return user_input
+        try:
+            if microphone_index is not None:
+                source_mic = sr.Microphone(device_index=microphone_index)
+            else:
+                source_mic = sr.Microphone()
+
+            with source_mic as source:
+                r.adjust_for_ambient_noise(source, duration=1)
+                logger.info("Listening...")
+                audio = r.listen(source, timeout=5, phrase_time_limit=10)
+
+        except OSError as e:
+            logger.error(f"Microphone error: {e}")
+            return "Microphone not found. Please check your audio input device."
+
+        except sr.WaitTimeoutError:
+            return "I didn't hear anything. Please try again."
+
+        try:
+            logger.info("Recognizing speech...")
+            user_input = r.recognize_google(audio, language='en-in')
+            logger.info(f"User said: {user_input}")
+            return user_input
+
+        except sr.UnknownValueError:
+            return "Say that again please..."
+
+        except sr.RequestError:
+            return "Connection error - please check your internet."
+
+    except Exception:
+        logger.exception("Unexpected error in listen()")
+        return "Something went wrong while listening."

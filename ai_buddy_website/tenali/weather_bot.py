@@ -5,12 +5,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Load OpenWeatherMap API key from environment
-API_KEY = os.getenv("OPENWEATHER_API_KEY")
-if not API_KEY:
-    # Don't raise on import; the functions will return helpful messages when used
-    print("Warning: OPENWEATHER_API_KEY not set. Weather queries will return an explanatory message.")
-
 # Nominatim geocoding endpoint
 GEOCODE_URL = "https://nominatim.openstreetmap.org/search"
 # OpenWeatherMap API endpoint (use HTTPS)
@@ -74,8 +68,9 @@ def get_weather_info(user_input):
         if not city:
             return "Please specify a city, e.g., 'weather in London'."
 
-    # Check API key
-    if not API_KEY:
+    # Read the key at request time so runtime configuration changes take effect.
+    api_key = os.getenv("OPENWEATHER_API_KEY")
+    if not api_key:
         return "Weather API key not configured. Please set OPENWEATHER_API_KEY in .env."
 
     lat, lon = get_coordinates(city)
@@ -86,7 +81,7 @@ def get_weather_info(user_input):
         params = {
             'lat': lat,
             'lon': lon,
-            'appid': API_KEY,
+            'appid': api_key,
             'units': 'metric'
         }
         response = requests.get(OWM_URL, params=params, timeout=10)

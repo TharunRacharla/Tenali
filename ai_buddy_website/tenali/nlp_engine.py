@@ -78,6 +78,12 @@ def parse_input(text: str) -> dict:
             - entities: Extracted information (e.g., city for weather queries)
     """
     text = (text or '').strip()
+    lower_text = text.lower()
+
+    if any(k in lower_text for k in ["shutdown", "shut down", "shut the system"]):
+        return {"intent": "shutdown", "entities": {}}
+    if any(k in lower_text for k in ["restart the system", "restart"]):
+        return {"intent": "restart", "entities": {}}
 
     # Attempt ML prediction first
     intent, score = _predict_intent_with_model(text)
@@ -92,8 +98,6 @@ def parse_input(text: str) -> dict:
         return {'intent': normalized, 'entities': entities}
 
     # Fallback to rule-based rules below
-    lower_text = text.lower()
-
     if any(k in lower_text for k in ["wake up", "wake"]):
         return {"intent": "wake_up", "entities": {}}
     if any(k in lower_text for k in ["go to sleep", "sleep now", "sleep"]):
@@ -121,10 +125,5 @@ def parse_input(text: str) -> dict:
         return {"intent": "date", "entities": {}}
     if "joke" in lower_text:
         return {"intent": "joke", "entities": {}}
-    if any(k in lower_text for k in ["shutdown", "shut down", "shut the system"]):
-        return {"intent": "shutdown", "entities": {}}
-    if any(k in lower_text for k in ["restart the system", "restart"]):
-        return {"intent": "restart", "entities": {}}
-
     # fallback
     return {"intent": "unknown", "entities": {}}
